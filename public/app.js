@@ -19,6 +19,11 @@
   const PAGE_SIZE = 10;
   const TIME_LABELS = { all: '全部', 7: '近 7 天', 30: '近 30 天', 90: '近 90 天' };
   const DEADLINE_LABELS = { all: '全部', upcoming: '有截止日', week: '7 天内', passed: '已截止' };
+  const CONFIG = Object.assign(
+    { feedUrl: '/api/feed', statusUrl: '/api/status', staticMode: false },
+    window.WEICHANG_CONFIG || {}
+  );
+  const STATIC_MODE = Boolean(CONFIG.staticMode);
 
   const now = new Date();
   const state = {
@@ -202,7 +207,7 @@
       renderFeed();
     }
     try {
-      const res = await fetch('/api/feed', { cache: 'no-store' });
+      const res = await fetch(CONFIG.feedUrl, { cache: 'no-store' });
       if (!res.ok) {
         const payload = await res.json().catch(() => ({}));
         throw new Error(payload.error || `HTTP ${res.status}`);
@@ -225,7 +230,7 @@
 
   async function fetchStatus() {
     try {
-      const res = await fetch('/api/status', { cache: 'no-store' });
+      const res = await fetch(CONFIG.statusUrl, { cache: 'no-store' });
       if (!res.ok) return null;
       const status = await res.json();
       state.status = status;
@@ -315,7 +320,10 @@
     const when = state.updatedAt ? `更新于 ${relativeTime(state.updatedAt)}` : '正在同步官方来源';
     setText('updated-text', when);
     setText('sidebar-updated', when);
-    setText('auto-state', state.refreshing ? '正在同步' : '自动更新');
+    setText(
+      'auto-state',
+      STATIC_MODE ? '随部署更新' : state.refreshing ? '正在同步' : '自动更新'
+    );
     const live = document.querySelector('.sidebar-live');
     if (live) live.classList.toggle('is-busy', state.refreshing);
     updateRefreshButtons();
@@ -323,7 +331,8 @@
 
   function updateRefreshButtons() {
     if (!el.refreshBtn) return;
-    el.refreshBtn.disabled = state.refreshing;
+    el.refreshBtn.hidden = STATIC_MODE;
+    el.refreshBtn.disabled = STATIC_MODE || state.refreshing;
     el.refreshBtn.classList.toggle('is-spinning', state.refreshing);
     el.refreshBtn.setAttribute('aria-busy', String(state.refreshing));
   }
@@ -723,6 +732,10 @@
   /* ---------- refresh ---------- */
 
   async function triggerRefresh() {
+    if (STATIC_MODE) {
+      toast('当前为静态部署，数据随页面重新构建更新');
+      return;
+    }
     if (state.refreshing) return;
     state.refreshing = true;
     renderStatus();
@@ -1345,6 +1358,7 @@
 
   async function init() {
     bindEvents();
+    if (STATIC_MODE && el.refreshBtn) el.refreshBtn.hidden = true;
     const initialView = location.hash.replace(/^#\/?/, '') || 'feed';
     go(initialView, { push: false, scroll: false });
     renderStatus();
@@ -1358,9 +1372,12 @@
     await checkStatus({ initial: true });
     renderStatus();
 
-    setInterval(() => {
-      if (!document.hidden) checkStatus();
-    }, 45000);
+    setInterval(
+      () => {
+        if (!document.hidden) checkStatus();
+      },
+      STATIC_MODE ? 300000 : 45000
+    );
     setInterval(renderStatus, 60000);
   }
 

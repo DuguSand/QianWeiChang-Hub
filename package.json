@@ -10,6 +10,8 @@
     "start": "node server.js",
     "refresh": "node scripts/refresh.js",
     "reclassify": "node scripts/reclassify.js",
+    "build:pages": "node scripts/build-pages.js",
+    "preview:pages": "node scripts/preview-pages.js",
     "test": "node test/classify.test.js"
   },
   "keywords": [

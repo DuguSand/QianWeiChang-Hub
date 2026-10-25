@@ -4,6 +4,7 @@ node_modules/
 .cdp-*/
 .ui-*/
 .final-profile*/
+dist/
 data/downloads/
 data/feed.json
 data/feed.old*.json
