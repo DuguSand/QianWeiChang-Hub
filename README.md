@@ -22,7 +22,7 @@
 
 ## 本地运行
 
-要求 Node.js 18+（开发环境为 Node 24）。
+要求 Node.js 20.18+（开发环境为 Node 24）。
 
 ```bash
 npm install
