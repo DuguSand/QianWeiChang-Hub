@@ -1,0 +1,31 @@
+name: Trigger Cloudflare Pages rebuild
+
+on:
+  schedule:
+    # 每 2 小时触发一次 Cloudflare Pages 的 Deploy Hook。
+    # Cloudflare 会重新执行 npm run build，抓取最新数据并部署。
+    - cron: '17 */2 * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: cloudflare-pages-rebuild
+  cancel-in-progress: true
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Trigger deploy hook
+        env:
+          DEPLOY_HOOK: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$DEPLOY_HOOK" ]; then
+            echo "::warning::CLOUDFLARE_DEPLOY_HOOK 尚未配置，跳过本次定时重建。"
+            exit 0
+          fi
+          curl --fail --silent --show-error --request POST "$DEPLOY_HOOK"
+          echo "Cloudflare Pages 重建已触发。"

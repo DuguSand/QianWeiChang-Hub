@@ -3,24 +3,50 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { CATEGORY_META } = require('../lib/sources');
+const { refreshFeed } = require('../lib/scraper');
 
 const ROOT = path.join(__dirname, '..');
 const PUBLIC_DIR = path.join(ROOT, 'public');
 const DIST_DIR = path.join(ROOT, 'dist');
 const FEED_FILE = path.join(ROOT, 'data', 'feed.json');
+const SEED_FILE = path.join(ROOT, 'data', 'seed-feed.json');
+const SHOULD_REFRESH = process.argv.includes('--refresh');
+
+async function readSeed() {
+  try {
+    return JSON.parse(await fs.readFile(SEED_FILE, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+async function readCache() {
+  try {
+    return JSON.parse(await fs.readFile(FEED_FILE, 'utf8'));
+  } catch (error) {
+    if (error.code !== 'ENOENT') console.warn(`[build:pages] 读取缓存失败：${error.message}`);
+    return readSeed();
+  }
+}
 
 async function main() {
-  let feed;
-  try {
-    feed = JSON.parse(await fs.readFile(FEED_FILE, 'utf8'));
-  } catch (error) {
-    throw new Error(
-      `无法读取 data/feed.json，请先执行 npm run refresh 生成抓取缓存。\n原始错误：${error.message}`
-    );
+  let feed = null;
+
+  if (SHOULD_REFRESH) {
+    try {
+      console.log('[build:pages] 尝试抓取最新官方信息…');
+      feed = await refreshFeed({ log: () => {} });
+    } catch (error) {
+      console.warn(`[build:pages] 抓取失败，尝试使用已提交的快照：${error.message}`);
+    }
   }
 
-  if (!Array.isArray(feed.items) || feed.items.length === 0) {
-    throw new Error('data/feed.json 中没有可用条目，请先执行 npm run refresh。');
+  if (!feed?.items?.length) feed = await readCache();
+  if (!feed?.items?.length) feed = await readSeed();
+  if (!feed?.items?.length) {
+    throw new Error(
+      '没有可用数据。请先执行 npm run refresh，或确认 data/seed-feed.json 存在。'
+    );
   }
 
   await fs.rm(DIST_DIR, { recursive: true, force: true });
