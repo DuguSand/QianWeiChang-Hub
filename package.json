@@ -1,0 +1,30 @@
+{
+  "name": "qianweichang-hub",
+  "version": "1.0.0",
+  "description": "伟长汇：上海大学钱伟长学院通知与活动聚合站",
+  "main": "server.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "refresh": "node scripts/refresh.js",
+    "reclassify": "node scripts/reclassify.js",
+    "test": "node test/classify.test.js"
+  },
+  "keywords": [
+    "上海大学",
+    "钱伟长学院",
+    "信息聚合"
+  ],
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=18"
+  },
+  "type": "commonjs",
+  "dependencies": {
+    "cheerio": "^1.2.0",
+    "express": "^4.22.3"
+  }
+}

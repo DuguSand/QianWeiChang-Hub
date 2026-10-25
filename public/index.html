@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="伟长汇：自动聚合上海大学钱伟长学院、伟长书院与上海大学官方渠道的通知、讲座、活动、奖助和教务信息。"
+    />
+    <meta name="theme-color" content="#f6f2e9" />
+    <title>伟长汇 · 钱伟长学院信息聚合</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <svg class="svg-sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+      <symbol id="i-search" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="7"></circle>
+        <path d="m20 20-3.4-3.4"></path>
+      </symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24">
+        <path d="M20 11a8.1 8.1 0 0 0-14.7-4L3 10"></path>
+        <path d="M3 4v6h6"></path>
+        <path d="M4 13a8.1 8.1 0 0 0 14.7 4L21 14"></path>
+        <path d="M21 20v-6h-6"></path>
+      </symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24">
+        <path d="M5 12h14"></path>
+        <path d="m13 6 6 6-6 6"></path>
+      </symbol>
+      <symbol id="i-external" viewBox="0 0 24 24">
+        <path d="M14 4h6v6"></path>
+        <path d="m20 4-9 9"></path>
+        <path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"></path>
+      </symbol>
+      <symbol id="i-bookmark" viewBox="0 0 24 24">
+        <path d="M6 4.8A1.8 1.8 0 0 1 7.8 3h8.4A1.8 1.8 0 0 1 18 4.8V21l-6-4-6 4Z"></path>
+      </symbol>
+      <symbol id="i-calendar" viewBox="0 0 24 24">
+        <rect x="3.5" y="5" width="17" height="15.5" rx="2"></rect>
+        <path d="M7.5 3v4M16.5 3v4M3.5 9.5h17"></path>
+      </symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="8.5"></circle>
+        <path d="M12 7v5l3 2"></path>
+      </symbol>
+      <symbol id="i-close" viewBox="0 0 24 24">
+        <path d="m6 6 12 12M18 6 6 18"></path>
+      </symbol>
+      <symbol id="i-chevron" viewBox="0 0 24 24">
+        <path d="m9 5 7 7-7 7"></path>
+      </symbol>
+      <symbol id="i-download" viewBox="0 0 24 24">
+        <path d="M12 3v12"></path>
+        <path d="m7 10 5 5 5-5"></path>
+        <path d="M4 20h16"></path>
+      </symbol>
+      <symbol id="i-check" viewBox="0 0 24 24">
+        <path d="m5 12 4.5 4.5L19 6.5"></path>
+      </symbol>
+      <symbol id="i-reset" viewBox="0 0 24 24">
+        <path d="M4 4v6h6"></path>
+        <path d="M5.5 9a8 8 0 1 1-.6 5"></path>
+      </symbol>
+    </svg>
+
+    <div class="page-grain" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="#/feed" data-view-link="feed" aria-label="伟长汇首页">
+          <span class="brand-mark"><span>伟</span></span>
+          <span class="brand-word">
+            <strong>伟长汇</strong>
+            <small>QIAN WEICHANG · INFO HUB</small>
+          </span>
+        </a>
+
+        <nav class="main-nav" aria-label="主导航">
+          <a href="#/feed" data-view-link="feed" class="is-active">信息流</a>
+          <a href="#/calendar" data-view-link="calendar">截止日历</a>
+          <a href="#/saved" data-view-link="saved">
+            我的收藏
+            <span class="nav-count" id="nav-saved-count" hidden>0</span>
+          </a>
+        </nav>
+
+        <label class="search-field" for="search-input">
+          <svg class="icon" aria-hidden="true"><use href="#i-search"></use></svg>
+          <input
+            id="search-input"
+            type="search"
+            placeholder="搜索通知、讲座、关键词"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <kbd>Ctrl K</kbd>
+        </label>
+      </div>
+    </header>
+
+    <main class="shell">
+      <aside class="sidebar" aria-label="栏目导引">
+        <div class="sidebar-head">
+          <span>栏目导引</span>
+          <button class="sidebar-reset" id="reset-filters" type="button">
+            <svg class="icon" aria-hidden="true"><use href="#i-reset"></use></svg>
+            重置
+          </button>
+        </div>
+
+        <div class="sidebar-group">
+          <p class="sidebar-label">信息范围</p>
+          <div class="side-list" id="scope-filters"></div>
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <div class="sidebar-group">
+          <p class="sidebar-label">内容栏目</p>
+          <div class="side-list" id="category-filters"></div>
+        </div>
+
+        <div class="sidebar-foot">
+          <div class="sidebar-live"><span class="live-dot"></span><span id="auto-state">自动更新</span></div>
+          <p id="sidebar-updated">正在同步官方来源</p>
+          <p class="sidebar-note">非官方聚合 · 以原文为准</p>
+        </div>
+      </aside>
+
+      <section class="content">
+        <div class="view" id="view-feed">
+          <div class="content-head">
+            <div>
+              <p class="section-kicker">THE FEED / 信息流</p>
+              <h1>信息流</h1>
+              <p class="content-sub">
+                <span id="result-count">0</span> 条信息
+                <span class="sub-dot">·</span>
+                <span id="updated-text">正在同步</span>
+              </p>
+            </div>
+            <button class="button button-outline refresh-button" id="refresh-btn" type="button">
+              <svg class="icon" aria-hidden="true"><use href="#i-refresh"></use></svg>
+              刷新
+            </button>
+          </div>
+
+          <div class="filter-bar" id="filter-bar">
+            <details class="filter-menu" id="time-menu">
+              <summary>
+                <span>时间</span>
+                <b id="time-value">全部</b>
+                <svg class="icon" aria-hidden="true"><use href="#i-chevron"></use></svg>
+              </summary>
+              <div class="filter-options">
+                <button type="button" data-time="all">全部时间</button>
+                <button type="button" data-time="7">近 7 天</button>
+                <button type="button" data-time="30">近 30 天</button>
+                <button type="button" data-time="90">近 90 天</button>
+              </div>
+            </details>
+
+            <details class="filter-menu" id="deadline-menu">
+              <summary>
+                <span>截止</span>
+                <b id="deadline-value">全部</b>
+                <svg class="icon" aria-hidden="true"><use href="#i-chevron"></use></svg>
+              </summary>
+              <div class="filter-options">
+                <button type="button" data-deadline="all">全部</button>
+                <button type="button" data-deadline="upcoming">有截止日</button>
+                <button type="button" data-deadline="week">7 天内截止</button>
+                <button type="button" data-deadline="passed">已截止</button>
+              </div>
+            </details>
+
+            <details class="filter-menu" id="category-menu">
+              <summary>
+                <span>栏目</span>
+                <b id="category-value">全部</b>
+                <svg class="icon" aria-hidden="true"><use href="#i-chevron"></use></svg>
+              </summary>
+              <div class="filter-options" id="category-menu-options"></div>
+            </details>
+
+            <div class="sort-group" role="group" aria-label="排序">
+              <span>排序</span>
+              <button type="button" data-sort="latest" class="is-active">最新</button>
+              <button type="button" data-sort="earliest">最早</button>
+              <button type="button" data-sort="deadline">截止优先</button>
+            </div>
+
+            <span class="result-meta" id="result-meta"></span>
+          </div>
+
+          <div class="active-filter-bar" id="active-filter-bar" hidden></div>
+          <div class="feed-list" id="feed-list" aria-live="polite"></div>
+
+          <div class="empty-state" id="empty-state" hidden>
+            <span class="empty-seal" aria-hidden="true">汇</span>
+            <h3>暂时没有匹配的信息</h3>
+            <p>换一个关键词，或放宽筛选条件试试。</p>
+            <button class="button button-outline" id="empty-reset" type="button">清除筛选</button>
+          </div>
+
+          <div class="load-more-wrap" id="load-more-wrap" hidden>
+            <button class="button button-outline load-more" id="load-more" type="button">
+              加载更多
+              <span id="load-more-count"></span>
+            </button>
+            <span class="result-meta" id="result-meta-bottom"></span>
+          </div>
+        </div>
+
+        <div class="view" id="view-calendar" hidden>
+          <div class="content-head">
+            <div>
+              <p class="section-kicker">CALENDAR / 截止日历</p>
+              <h1>截止日历</h1>
+              <p class="content-sub">自动汇总报名、申报、提交与活动节点，点击日期查看当天信息。</p>
+            </div>
+            <button class="button button-outline" id="export-ics" type="button">
+              <svg class="icon" aria-hidden="true"><use href="#i-download"></use></svg>
+              导出 .ics
+            </button>
+          </div>
+
+          <div class="calendar-layout">
+            <section class="calendar-card" aria-label="截止日历">
+              <div class="calendar-head">
+                <div class="calendar-nav-group">
+                  <button class="calendar-nav" id="calendar-prev" type="button" aria-label="上个月">
+                    <svg class="icon" aria-hidden="true" style="transform: rotate(180deg)"><use href="#i-chevron"></use></svg>
+                  </button>
+                  <button class="calendar-nav" id="calendar-next" type="button" aria-label="下个月">
+                    <svg class="icon" aria-hidden="true"><use href="#i-chevron"></use></svg>
+                  </button>
+                </div>
+                <div class="calendar-title">
+                  <p id="calendar-year">2026</p>
+                  <h2 id="calendar-month">十月</h2>
+                </div>
+                <button class="calendar-today" id="calendar-today" type="button">回到今天</button>
+              </div>
+              <div class="calendar-legend">
+                <span><i class="legend-dot deadline"></i> 截止日</span>
+                <span><i class="legend-dot event"></i> 活动日</span>
+                <span class="calendar-count" id="calendar-event-count">本月 0 个节点</span>
+              </div>
+              <div class="calendar-weekdays" aria-hidden="true">
+                <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+              </div>
+              <div class="calendar-grid" id="calendar-grid"></div>
+            </section>
+
+            <aside class="calendar-side">
+              <div class="calendar-side-head">
+                <p class="section-kicker">SELECTED DAY</p>
+                <h3 id="selected-day-title">今天</h3>
+                <p id="selected-day-subtitle">选择日期查看节点</p>
+              </div>
+              <div class="day-list" id="calendar-day-list"></div>
+            </aside>
+          </div>
+        </div>
+
+        <div class="view" id="view-saved" hidden>
+          <div class="content-head">
+            <div>
+              <p class="section-kicker">MY COLLECTION / 我的收藏</p>
+              <h1>我的收藏</h1>
+              <p class="content-sub"><span id="saved-total">0 条收藏</span> · 保存在当前浏览器</p>
+            </div>
+            <div class="head-actions">
+              <button class="button button-outline" id="export-saved-ics" type="button">
+                <svg class="icon" aria-hidden="true"><use href="#i-download"></use></svg>
+                导出截止日
+              </button>
+              <button class="text-button danger" id="clear-saved" type="button">清空</button>
+            </div>
+          </div>
+
+          <div class="saved-list" id="saved-list"></div>
+          <div class="empty-state" id="saved-empty" hidden>
+            <span class="empty-seal" aria-hidden="true">藏</span>
+            <h3>还没有收藏</h3>
+            <p>在信息卡片或详情页点击书签，重要信息就会留在这里。</p>
+            <a class="button button-primary" href="#/feed" data-view-link="feed">去信息流看看</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="drawer-scrim" id="drawer-scrim" hidden></div>
+    <aside
+      class="detail-drawer"
+      id="detail-drawer"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="drawer-title"
+      aria-hidden="true"
+      tabindex="-1"
+    >
+      <div class="drawer-top">
+        <span class="drawer-source" id="drawer-source">官方来源</span>
+        <button class="icon-button" id="drawer-close" type="button" aria-label="关闭详情">
+          <svg class="icon" aria-hidden="true"><use href="#i-close"></use></svg>
+        </button>
+      </div>
+      <div class="drawer-scroll">
+        <div class="drawer-badges" id="drawer-badges"></div>
+        <h2 id="drawer-title">信息标题</h2>
+        <div class="drawer-meta" id="drawer-meta"></div>
+        <div class="drawer-deadline" id="drawer-deadline" hidden></div>
+        <p class="drawer-summary" id="drawer-summary"></p>
+        <div class="drawer-content" id="drawer-content"></div>
+        <div class="drawer-tags" id="drawer-tags"></div>
+        <p class="drawer-disclaimer">
+          以上内容由官方页面自动提取，可能省略附件、表格或图片。完整信息请阅读原文。
+        </p>
+      </div>
+      <div class="drawer-footer">
+        <button class="button button-outline drawer-save" id="drawer-save" type="button">
+          <svg class="icon" aria-hidden="true"><use href="#i-bookmark"></use></svg>
+          <span>收藏</span>
+        </button>
+        <a
+          class="button button-primary drawer-link"
+          id="drawer-link"
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          阅读原文
+          <svg class="icon" aria-hidden="true"><use href="#i-external"></use></svg>
+        </a>
+      </div>
+    </aside>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
